@@ -21,8 +21,7 @@ Token.prototype.create = function (data, trs) {
 	trs.asset.token = {
 		name: data.name,
 		description: data.description,
-		fund: data.fund,
-		rate: data.rate
+		fund: data.fund
 	}
 
 	return trs;
@@ -34,7 +33,7 @@ Token.prototype.calculateFee = function (trs) {
 
 Token.prototype.getBytes = function (trs) {
 	try {
-		var buf = new Buffer(trs.asset.token.name + trs.asset.token.description + trs.asset.token.fund + trs.asset.token.rate, "utf8");
+		var buf = new Buffer(trs.asset.token.name + trs.asset.token.description + trs.asset.token.fund, "utf8");
 	} catch (e) {
 		throw Error(e.toString());
 	}
@@ -52,9 +51,6 @@ Token.prototype.verify = function (trs, sender, cb, scope) {
 	if (!trs.asset.token.name) {
 		return cb("Invalid token name");
 	}
-	if (!trs.asset.token.rate || trs.asset.token.rate <= 0) {
-		return cb("Invalid token rate");
-	}
 	if (trs.asset.token.name.length > 16) {
 		return cb("Token name must be 16 characters or less");
 	}
@@ -62,7 +58,6 @@ Token.prototype.verify = function (trs, sender, cb, scope) {
 		return cb("Invalid token description");
 	}
 	trs.asset.token.fund = parseInt(trs.asset.token.fund);
-	trs.asset.token.rate = parseInt(trs.asset.token.rate);
 	if (typeof trs.asset.token.fund != "number") {
 		return cb("Invalid token fund");
 	}
@@ -79,7 +74,7 @@ Token.prototype.apply = function (trs, sender, cb, scope) {
 	delete private.u_tokens[trs.asset.token.name];
 	private.tokens[trs.asset.token.name] = trs.id;
 
-	if (sender.balance["BEL"] < trs.fee/trs.rate) {
+	if (sender.balance["BEL"] < trs.fee) {
 		return setImmediate(cb, "Account does not have enouh BEL: " + trs.id);
 	}
 
@@ -94,17 +89,15 @@ Token.prototype.apply = function (trs, sender, cb, scope) {
 			}, cb, scope);
 		},
 		function (cb) {
-			var amt = trs.fee / trs.asset.token.rate;
 			modules.blockchain.accounts.mergeAccountAndGet({
 				address: sender.address,
-				balance: {"BEL": -amt}
+				balance: {"BEL": -trs.fee}
 			}, cb, scope);
 		}
 	], cb);
 }
 
 Token.prototype.undo = function (trs, sender, cb, scope) {
-	console.log('Undo')
 	delete private.tokens[trs.asset.token.name];
 	private.u_tokens[trs.asset.token.name] = trs.id;
 
@@ -119,10 +112,9 @@ Token.prototype.undo = function (trs, sender, cb, scope) {
 			}, cb, scope);
 		},
 		function (cb) {
-			var amt = trs.fee / trs.asset.token.rate;
 			modules.blockchain.accounts.undoMerging({
 				address: sender.address,
-				balance: {"BEL": -amt}
+				balance: {"BEL": -trs.fee}
 			}, cb, scope);
 		}
 	], cb);
@@ -150,17 +142,15 @@ Token.prototype.applyUnconfirmed = function (trs, sender, cb, scope) {
 			}, cb, scope);
 		},
 		function (cb) {
-		    var amt = trs.fee / trs.asset.token.rate;
 			modules.blockchain.accounts.mergeAccountAndGet({
 				address: sender.address,
-				u_balance: {"BEL": -amt}
+				u_balance: {"BEL": -trs.fee}
 			}, cb, scope);
 		}
 	], cb);
 }
 
 Token.prototype.undoUnconfirmed = function (trs, sender, cb, scope) {
-	console.log('undoUnconfirmed')
 	delete private.u_tokens[trs.asset.token.name];
 
 	async.series([
@@ -174,10 +164,9 @@ Token.prototype.undoUnconfirmed = function (trs, sender, cb, scope) {
 			}, cb, scope);
 		},
 		function (cb) {
-			var amt = trs.fee / trs.asset.token.rate;
 			modules.blockchain.accounts.undoMerging({
 				address: sender.address,
-				u_balance: {"BEL": -amt}
+				u_balance: {"BEL": -trs.fee}
 			}, cb, scope);
 		}
 	], cb);
@@ -190,7 +179,6 @@ Token.prototype.save = function (trs, cb) {
 			name: trs.asset.token.name,
 			description: trs.asset.token.description,
 			fund: trs.asset.token.fund,
-			rate: trs.asset.token.rate,
 			transactionId: trs.id
 		}
 	}, cb);
@@ -212,8 +200,7 @@ Token.prototype.dbRead = function (row) {
 		token: {
 			name: row.t_t_name,
 			description: row.t_t_description,
-			fund: row.t_t_fund,
-			rate: row.t_t_rate
+			fund: row.t_t_fund
 		}
 	};
 }

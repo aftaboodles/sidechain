@@ -33,7 +33,6 @@ Token.prototype.addToken = function (cb, query) {
 					name: query.name,
 					description: query.description,
 					fund: query.fund,
-					rate: query.rate
 				});
 			} catch (e) {
 				return cb(e.toString());
@@ -73,7 +72,6 @@ Token.prototype.getTokens = function (cb, query) {
 				{"tkn.\"name\"": "name"},
 				{"t.\"senderId\"": "owner"},
 				{"tkn.\"fund\"": "fund"},
-				{"tkn.\"rate\"": "rate"},
 				{"tkn.\"description\"": "description"},
 				{
 					"name": "balance",
@@ -85,7 +83,6 @@ Token.prototype.getTokens = function (cb, query) {
 			"tiker": String,
 			"owner": String,
 			"fund": Number,
-			"rate": Number,
 			"name": String,
 			"balance": Number
 		}, function (err, tokens) {
