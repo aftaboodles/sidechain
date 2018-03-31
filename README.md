@@ -16,4 +16,4 @@ The official SDK for building dapps on the [Belrium](https://www.belfrics.in) de
 
 ## Authors
 
-- Pankaj K. Yadav <pankaj.kumar@oodlestechnologies.com>
+- Pankaj K. Yadav <alam.aftab@oodlestechnologies.com>
