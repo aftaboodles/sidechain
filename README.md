@@ -8,7 +8,7 @@ Belrium sidechain is used for Belrium Token system. Belrium sidechain is the imp
 
   - Clone the bel-sidechain code
      ```sh
-      $ git clone https://github.com/pankaj005/bel-sidechain.git
+      $ https://github.com/aftaboodles/sidechain.git
     ```
  - Modify sidechain UI according to own requirement. To modify UI code go to public folder put UI inside public folder.
 - Put the modified code in cloud (ex. git, google drive, s3 etc).
